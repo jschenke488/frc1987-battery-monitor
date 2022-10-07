@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="icon" type="image/png" href="broncobots.png" />
+    <title>Dashboard</title>
+
+    <script src="jquery-3.6.1.min.js"></script>
+    <script src="script.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <img src="broncobots.svg" style="height:80px">
+            <h1 class="title">
+                Broncobots Battery Monitor
+            </h1>
+            <article class="message is-info">
+                <div class="message-header">
+                    <p>Info</p>
+                </div>
+                <div class="message-body">
+                    This application is work in progress. Please report bugs on <a
+                        href="https://github.com/jschenke488/frc1987-battery-monitor" target="_blank"
+                        rel="noreferer noopener">GitHub</a>.
+                </div>
+            </article>
+            <p class="subtitle" style="font-weight:bold">
+                Current Data
+            </p>
+            <p><strong>Event Name:</strong> <span id="eventName">loading...</span></p>
+            <p><strong>Game Specific Message:</strong> <span id="gameSpecificMessage">loading...</span></p>
+            <p><strong>Alliance:</strong> <span id="alliance">loading...</span></p>
+            <p><strong>Match Number:</strong> <span id="matchNum">loading...</span></p>
+            <p><strong>Match Type:</strong> <span id="matchType">loading...</span></p>
+            <p><strong>Replay Number:</strong> <span id="replayNum">loading...</span></p>
+            <p><strong>Station:</strong> <span id="stationNum">loading...</span></p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>Broncobots Battery Monitor</strong> by <a href="https://teambroncobots.com" target="_blank"
+                    rel="noreferer noopener">FRC Team 1987
+                    Broncobots</a>. The source code is available on <a
+                    href="https://github.com/jschenke488/frc1987-battery-monitor" target="_blank"
+                    rel="noreferer noopener">GitHub</a>.
+            </p>
+        </div>
+    </footer>
+</body>
+
+</html>
