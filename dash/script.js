@@ -1,4 +1,6 @@
 let fmsData = { error: true, message: 'data not fetched yet' };
+let monitorActive = false;
+let interval = setInterval(() => { }, 5000);
 
 window.tables = {};
 window.tables.fms = {};
@@ -59,6 +61,44 @@ function update(data) {
 }
 
 $(document).ready(() => {
-    $.getJSON("/fms", data => update(data));
-    setInterval(() => $.getJSON("/fms?" + Date.now(), data => update(data)), 5000);
+    $('#startButton').click(() => {
+        if ($('#monitorInterval').val().trim() == '' && !monitorActive) return;
+        monitorActive = !monitorActive;
+        clearInterval(interval);
+        if (monitorActive) {
+            $('#startButton').text('Stop Monitoring');
+            $('#startButton').removeClass('is-success');
+            $('#startButton').addClass('is-danger');
+            interval = setInterval(() => {
+                $('#monitorBar').removeAttr('value');
+                $.getJSON('/fms?' + Date.now(), fms => {
+                    update(fms);
+                    data = {
+                        eventName: tables.fms.getData().eventName,
+                        matchType: tables.fms.getData().matchType,
+                        matchNum: tables.fms.getData().matchNum,
+                        replayNum: tables.fms.getData().replayNum,
+                        alliance: tables.fms.getData().isRedAlliance == true ? 'red' : 'blue',
+                        stationNum: tables.fms.getData().stationNum,
+                        matchTime: 0
+                    };
+                    console.log(data);
+                    $.ajax({
+                        method: "POST",
+                        url: "/push",
+                        data: data
+                    }).done(msg => {
+                        if (msg.error == true) {
+                            alert('Error occurred while logging data in database:\n' + JSON.stringify(msg));
+                        }
+                    });
+                });
+            }, Number($('#monitorInterval').val().trim()));
+        } else {
+            $('#startButton').text('Start Monitoring');
+            $('#startButton').addClass('is-success');
+            $('#startButton').removeClass('is-danger');
+            $('#monitorBar').attr('value', 0);
+        }
+    });
 });

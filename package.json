@@ -1,0 +1,23 @@
+{
+  "name": "frc1987-battery-monitor",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jschenke488/frc1987-battery-monitor.git"
+  },
+  "author": "FRC Team 1987 Broncobots",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/jschenke488/frc1987-battery-monitor/issues"
+  },
+  "homepage": "https://github.com/jschenke488/frc1987-battery-monitor#readme",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.2"
+  }
+}

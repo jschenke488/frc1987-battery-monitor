@@ -31,16 +31,24 @@
                         rel="noreferer noopener">GitHub</a>.
                 </div>
             </article>
+            <p class="control">
+                <input id="monitorInterval" class="input" type="number" placeholder="Monitor Interval (milliseconds)"
+                    style="width:300px;margin-right:4px"><button id="startButton" class="button is-success"
+                    style="margin-left:0;width:200px">Start Monitoring</button>
+                <progress id="monitorBar" class="progress is-small is-primary" max="100" value="0"
+                    style="width:504px;margin-top:4px">15%</progress>
+            </p>
+            <br>
             <p class="subtitle" style="font-weight:bold">
                 Current Data
             </p>
-            <p><strong>Event Name:</strong> <span id="eventName">loading...</span></p>
-            <p><strong>Game Specific Message:</strong> <span id="gameSpecificMessage">loading...</span></p>
-            <p><strong>Alliance:</strong> <span id="alliance">loading...</span></p>
-            <p><strong>Match Number:</strong> <span id="matchNum">loading...</span></p>
-            <p><strong>Match Type:</strong> <span id="matchType">loading...</span></p>
-            <p><strong>Replay Number:</strong> <span id="replayNum">loading...</span></p>
-            <p><strong>Station:</strong> <span id="stationNum">loading...</span></p>
+            <p><strong>Event Name:</strong> <span id="eventName">no data</span></p>
+            <p><strong>Game Specific Message:</strong> <span id="gameSpecificMessage">no data</span></p>
+            <p><strong>Alliance:</strong> <span id="alliance">no data</span></p>
+            <p><strong>Match Number:</strong> <span id="matchNum">no data</span></p>
+            <p><strong>Match Type:</strong> <span id="matchType">no data</span></p>
+            <p><strong>Replay Number:</strong> <span id="replayNum">no data</span></p>
+            <p><strong>Station:</strong> <span id="stationNum">no data</span></p>
         </div>
     </section>
 
