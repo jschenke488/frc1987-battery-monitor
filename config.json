@@ -1,4 +1,5 @@
 {
-    "networkTablesHost": "",
-    "networkTablesDebug": true
+    "networkTablesDebug": true,
+    "networkTablesHost": "localhost:5900",
+    "networkTablesRobotHost": "10.19.87.2"
 }

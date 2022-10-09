@@ -3,6 +3,7 @@ const db = new sqlite3.Database('battery.db');
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
+const axios = require('axios').default;
 
 const { networkTablesHost, networkTablesDebug } = require('./config.json');
 
@@ -26,8 +27,27 @@ app.get('/fms', (req, res) => {
             'error': false
         });
     } else {
-        // TODO
-        // fetch data from networktables
+        axios.get(`http://${networkTablesHost}/fms`).then(_response => {
+            let response = _response.data;
+            if (!(response.eventName != undefined && response.fmsControlData != undefined && response.gameSpecificMessage != undefined && response.isRedAlliance != undefined && response.matchNum != undefined && response.matchType != undefined && response.replayNum != undefined && response.stationNum != undefined && response.error != undefined)) {
+                let tmp = response;
+                response.error = true;
+                response.message = 'missing fields in FMS query from host, response: ' + JSON.stringify(tmp);
+                return res.json(response);
+            }
+            if (response.error == true && response.message == undefined) {
+                response.message = 'unknown error, error message not sent from host';
+                return res.json(response);
+            }
+            if (isNaN(response.fmsControlData) || (response.isRedAlliance != true && response.isRedAlliance != false) || isNaN(response.matchNum) || isNaN(response.matchType) || isNaN(response.replayNum) || isNaN(response.stationNum) || (response.error != true && response.error != false)) {
+                let tmp = response;
+                response.error = 'unexpected value in FMS query, response: ' + JSON.stringify(tmp);
+                return res.json(response);
+            }
+            return res.json(response);
+        }).catch(err => {
+            return res.json({ error: true, message: err.toString() });
+        });
     }
 });
 
@@ -56,6 +76,6 @@ app.post('/push', (req, res) => {
     });
 });
 
-const listener = app.listen(5900, function() {
+const listener = app.listen(5901, function() {
     console.log('Your app is listening on port ' + listener.address().port);
 });
