@@ -19,6 +19,8 @@ sd = NetworkTables.getTable("SmartDashboard") # get smartdashboard from networkt
 fms = NetworkTables.getTable("FMSInfo") # fms info
 
 def getFMSEntries():
+    # default values are never actually used
+    # should report this to https://github.com/robotpy/pynetworktables
     if (NetworkTables.isConnected()):
         entries = {
             'eventName': fms.getEntry('EventName').getString(''),
