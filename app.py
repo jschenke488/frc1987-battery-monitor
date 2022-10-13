@@ -4,10 +4,8 @@ config = json.load(f)
 server = config['networkTablesRobotHost']
 f.close()
 
-import time
-import werkzeug
 from networktables import NetworkTables
-from flask import Flask, send_from_directory
+from flask import Flask
 
 # To see messages from networktables, you must setup logging
 import logging
@@ -15,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # initialize connection to robot
 NetworkTables.initialize(server=server)
-sd = NetworkTables.getTable("SmartDashboard") # get smartdashboard from networktables
+bm = NetworkTables.getTable("batteryMonitor") # get smartdashboard from networktables
 fms = NetworkTables.getTable("FMSInfo") # fms info
 
 def getFMSEntries():
@@ -40,11 +38,32 @@ def getFMSEntries():
             'message': 'not connected to robot'
         }
 
+def getBatteryData():
+    if (NetworkTables.isConnected()):
+        entries = {
+            'voltage': bm.getEntry('voltage').getDouble(-1),
+            'matchTime': bm.getEntry('matchTime').getDouble(-1),
+            'isTeleop': bm.getEntry('isTeleop').getBoolean(False),
+            'isAutonomous': bm.getEntry('isAutonomous').getBoolean(False),
+            'batteryName': bm.getEntry('batteryName').getString('Battery 1'),
+            'error': False
+        }
+        return entries
+    else:
+        return {
+            'error': True,
+            'message': 'not connected to robot'
+        }
+
 app = Flask(__name__)
 
 @app.route("/fms")
 def fmsRoute():
     return getFMSEntries()
+
+@app.route("/battery")
+def batteryRoute():
+    return getBatteryData()
 
 if __name__ == "__main__":
     app.run(port=5900)

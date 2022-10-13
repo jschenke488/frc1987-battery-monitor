@@ -1,27 +1,34 @@
-let fmsData = { error: true, message: 'data not fetched yet' };
+let tableData = { error: true, message: 'data not fetched yet' };
 let monitorActive = false;
 let interval = setInterval(() => { }, 5000);
 
 window.tables = {};
-window.tables.fms = {};
-window.tables.fms.getData = () => { return fmsData };
-window.tables.smartDashboard = {};
-window.tables.smartDashboard.getData = () => { return { error: true, message: 'TODO' } };
+window.tables.getData = () => { return tableData };
 
-function update(data) {
-    _data = data;
+function update(fms, battery) {
+    _data = fms;
     if (_data.eventName == "") _data.eventName = "Unknown Event";
     if (_data.gameSpecificMessage == "") _data.gameSpecificMessage = "No Message";
 
-    fmsData = _data || { error: true, message: 'unknown error' };
+    tableData = _data || { error: true, message: 'unknown error' };
+    tableData.voltage = battery.voltage;
+    tableData.matchTime = battery.matchTime;
+    tableData.isTeleop = battery.isTeleop;
+    tableData.isAutonomous = battery.isAutonomous;
+    tableData.batteryName = battery.batteryName;
 
-    let eventName = tables.fms.getData().eventName;
-    let gameSpecificMessage = tables.fms.getData().gameSpecificMessage;
-    let alliance = tables.fms.getData().isRedAlliance == true ? 'Red' : 'Blue';
-    let matchNum = tables.fms.getData().matchNum;
-    let matchType = tables.fms.getData().matchType;
-    let replayNum = tables.fms.getData().replayNum;
-    let stationNum = tables.fms.getData().stationNum;
+    let eventName = tables.getData().eventName;
+    let gameSpecificMessage = tables.getData().gameSpecificMessage;
+    let alliance = tables.getData().isRedAlliance == true ? 'Red' : 'Blue';
+    let matchNum = tables.getData().matchNum;
+    let matchType = tables.getData().matchType;
+    let replayNum = tables.getData().replayNum;
+    let stationNum = tables.getData().stationNum;
+    let voltage = tables.getData().voltage;
+    let matchTime = tables.getData().matchTime;
+    let isTeleop = tables.getData().isTeleop;
+    let isAutonomous = tables.getData().isAutonomous;
+    let batteryName = tables.getData().batteryName;
 
     switch (matchType) {
         case 1:
@@ -58,6 +65,11 @@ function update(data) {
     $('#matchType').text(matchType);
     $('#replayNum').text(replayNum);
     $('#stationNum').text(stationNum);
+    $('#batteryVoltage').text(voltage);
+    $('#matchTime').text(matchTime);
+    $('#isTeleop').text(isTeleop);
+    $('#isAutonomous').text(isAutonomous);
+    $('#batteryName').text(batteryName);
 }
 
 $(document).ready(() => {
@@ -72,25 +84,31 @@ $(document).ready(() => {
             interval = setInterval(() => {
                 $('#monitorBar').removeAttr('value');
                 $.getJSON('/fms?' + Date.now(), fms => {
-                    update(fms);
-                    data = {
-                        eventName: tables.fms.getData().eventName,
-                        matchType: tables.fms.getData().matchType,
-                        matchNum: tables.fms.getData().matchNum,
-                        replayNum: tables.fms.getData().replayNum,
-                        alliance: tables.fms.getData().isRedAlliance == true ? 'red' : 'blue',
-                        stationNum: tables.fms.getData().stationNum,
-                        matchTime: 0
-                    };
-                    console.log(data);
-                    $.ajax({
-                        method: "POST",
-                        url: "/push",
-                        data: data
-                    }).done(msg => {
-                        if (msg.error == true) {
-                            alert('Error occurred while logging data in database:\n' + JSON.stringify(msg));
-                        }
+                    $.getJSON('/battery?' + Date.now(), battery => {
+                        update(fms, battery);
+                        data = {
+                            eventName: tables.getData().eventName,
+                            matchType: tables.getData().matchType,
+                            matchNum: tables.getData().matchNum,
+                            replayNum: tables.getData().replayNum,
+                            alliance: tables.getData().isRedAlliance == true ? 'red' : 'blue',
+                            stationNum: tables.getData().stationNum,
+                            voltage: tables.getData().voltage,
+                            matchTime: tables.getData().matchTime,
+                            isTeleop: Boolean(tables.getData().isTeleop),
+                            isAutonomous: Boolean(tables.getData().isAutonomous),
+                            batteryName: tables.getData().batteryName
+                        };
+                        console.log(data);
+                        $.ajax({
+                            method: "POST",
+                            url: "/push",
+                            data: data
+                        }).done(msg => {
+                            if (msg.error == true) {
+                                alert('Error occurred while logging data in database:\n' + JSON.stringify(msg));
+                            }
+                        });
                     });
                 });
             }, Number($('#monitorInterval').val().trim()));

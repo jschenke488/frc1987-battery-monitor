@@ -3,7 +3,7 @@ const db = new sqlite3.Database('battery.db');
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
-const axios = require('axios').default;
+const axios = require('axios');
 
 const { networkTablesHost, networkTablesDebug } = require('./config.json');
 
@@ -51,13 +51,47 @@ app.get('/fms', (req, res) => {
     }
 });
 
+app.get('/battery', (req, res) => {
+    if (networkTablesDebug == true) {
+        return res.json({
+            'voltage': 0.0,
+            'matchTime': -1.0,
+            'isTeleop': false,
+            'isAutonomous': false,
+            'batteryName': 'Battery 1',
+            'error': false
+        });
+    } else {
+        axios.get(`http://${networkTablesHost}/battery`).then(_response => {
+            let response = _response.data;
+            if (!(response.voltage != undefined && response.matchTime != undefined && response.isTeleop != undefined && response.isAutonomous != undefined && response.error != undefined && response.batteryName != undefined)) {
+                let tmp = response;
+                response.error = true;
+                response.message = 'missing fields in battery query from host, response: ' + JSON.stringify(tmp);
+                return res.json(response);
+            }
+            if (response.error == true && response.message == undefined) {
+                response.message = 'unknown error, error message not sent from host';
+                return res.json(response);
+            }
+            if (isNaN(response.voltage) || isNaN(response.matchTime) || (response.isTeleop != true && response.isTeleop != false) || (response.isAutonomous != true && response.isAutonomous != false) || (response.error != true && response.error != false)) {
+                let tmp = response;
+                response.error = 'unexpected value in battery query, response: ' + JSON.stringify(tmp);
+                return res.json(response);
+            }
+            return res.json(response);
+        }).catch(err => {
+            return res.json({ error: true, message: err.toString() });
+        });
+    }
+});
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.post('/push', (req, res) => {
     let body = req.body || {};
     console.log(body);
-    if (!(body.eventName != undefined && body.matchType != undefined && body.matchNum != undefined && body.replayNum != undefined && body.alliance != undefined && body.stationNum != undefined && body.matchTime != undefined && !isNaN(body.matchType) && !isNaN(body.matchNum) && !isNaN(body.replayNum) && !isNaN(body.stationNum) && !isNaN(body.matchTime) && (body.alliance == 'red' || body.alliance == 'blue'))) return res.json({ error: true, message: 'invalid input, input: ' + JSON.stringify(body) });
     body.eventName = body.eventName.toString();
     body.matchType = Number(body.matchType);
     body.matchNum = Number(body.matchNum);
@@ -65,11 +99,16 @@ app.post('/push', (req, res) => {
     body.alliance = body.alliance.toString();
     body.stationNum = Number(body.stationNum);
     body.matchTime = Number(body.matchTime);
+    body.voltage = Number(body.voltage);
+    body.matchTime = Number(body.matchTime);
+    body.isTeleop = Boolean(body.isTeleop) ? 1 : 0;
+    body.isAutonomous = Boolean(body.isAutonomous) ? 1 : 0;
+    body.batteryName = body.batteryName.toString();
 
     db.serialize(() => {
-        db.run("CREATE TABLE IF NOT EXISTS batteryData (eventName TEXT, matchType INTEGER, matchNum INTEGER, replayNum INTEGER, alliance TEXT, stationNum INTEGER, matchTime INTEGER)");
+        db.run("CREATE TABLE IF NOT EXISTS batteryData (eventName TEXT, matchType INTEGER, matchNum INTEGER, replayNum INTEGER, alliance TEXT, stationNum INTEGER, matchTime INTEGER, voltage REAL, isTeleop INTEGER, isAutonomous INTEGER, batteryName TEXT)");
 
-        db.run("INSERT INTO batteryData (eventName, matchType, matchNum, replayNum, alliance, stationNum, matchTime) VALUES (?, ?, ?, ?, ?, ?, ?)", [body.eventName, body.matchType, body.matchNum, body.replayNum, body.alliance, body.stationNum, body.matchTime], function(err) {
+        db.run("INSERT INTO batteryData (eventName, matchType, matchNum, replayNum, alliance, stationNum, matchTime, voltage, isTeleop, isAutonomous, batteryName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [body.eventName, body.matchType, body.matchNum, body.replayNum, body.alliance, body.stationNum, body.matchTime, body.voltage, body.isTeleop, body.isAutonomous, body.batteryName], function(err) {
             if (err) return res.json({ error: true, message: err.toString() });
                 return res.json({ error: false });
             });
