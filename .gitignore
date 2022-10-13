@@ -282,3 +282,9 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# sqlite database for battery monitor
+*.db
+
+# DS Store
+*.DS_Store
