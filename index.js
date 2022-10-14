@@ -101,8 +101,12 @@ app.post('/push', (req, res) => {
     body.matchTime = Number(body.matchTime);
     body.voltage = Number(body.voltage);
     body.matchTime = Number(body.matchTime);
-    body.isTeleop = Boolean(body.isTeleop) ? 1 : 0;
-    body.isAutonomous = Boolean(body.isAutonomous) ? 1 : 0;
+    if (body.isTeleop == 1) body.isTeleop = 1;
+    else if (body.isTeleop == true) body.isTeleop = true;
+    else body.isTeleop = false;
+    if (body.isAutonomous == 1) body.isAutonomous = 1;
+    else if (body.isAutonomous == true) body.isAutonomous = true;
+    else body.isAutonomous = false;
     body.batteryName = body.batteryName.toString();
 
     db.serialize(() => {
@@ -114,6 +118,21 @@ app.post('/push', (req, res) => {
             });
     });
 });
+
+app.get('/getData', (req, res) => {
+    res.type('text/csv');
+    res.header('Content-Disposition', 'attachment;filename=batteryData.csv');
+
+    let response = "eventName,matchType,matchNum,replayNum,alliance,stationNum,matchTime,voltage,isTeleop,isAutonomous,batteryName\n";
+    db.serialize(() => {
+        db.each("SELECT rowid AS id, eventName, matchType, matchNum, replayNum, alliance, stationNum, matchTime, voltage, isTeleop, isAutonomous, batteryName FROM batteryData", (err, row) => {
+            console.log(row.id + ": " + row.voltage);
+            response += `"${row.eventName}",${row.matchType},${row.matchNum},${row.replayNum},"${row.alliance}",${row.stationNum},${row.matchTime},${row.voltage},${row.isTeleop},${row.isAutonomous},"${row.batteryName}"\n`;
+        }, () => {
+            res.send(response);
+        });
+    })
+})
 
 const listener = app.listen(5901, function() {
     console.log('Your app is listening on port ' + listener.address().port);
